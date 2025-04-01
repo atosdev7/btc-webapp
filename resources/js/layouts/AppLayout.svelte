@@ -5,12 +5,15 @@
 
     interface Props {
         breadcrumbs?: BreadcrumbItemType[];
+        showDeviceCombobox?: boolean;
+        devices?: { id: number; name: string; board_id: string }[];
+        selectedDeviceId?: number | null;        
         children?: Snippet;
     }
 
-    let { breadcrumbs = [], children }: Props = $props();
+    let { breadcrumbs = [], showDeviceCombobox, devices, selectedDeviceId, children }: Props = $props();
 </script>
 
-<AppLayout {breadcrumbs}>
+<AppLayout {breadcrumbs} showDeviceCombobox={showDeviceCombobox} devices={devices} selectedDeviceId={selectedDeviceId}>
     {@render children?.()}
 </AppLayout>
