@@ -5,6 +5,7 @@
     import { Badge } from "@/components/ui/badge/index.js";
     import DeviceSelecter from '@/components/DeviceSelecter.svelte';
     import { router } from '@inertiajs/svelte';
+    import { onDestroy } from 'svelte';
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -40,6 +41,16 @@
     function handleDeviceSelect(deviceId: number): void {
         router.get(route('dashboard'), {device_id: deviceId });
     }    
+
+    // Refresh the page every 10 seconds
+    const interval = setInterval(() => {
+        router.get(route('dashboard'), { device_id: selectedDeviceId });
+    }, 10000);
+
+    // Cleanup the interval when the component is destroyed
+    onDestroy(() => {
+        clearInterval(interval);
+    });    
 </script>
 
 <svelte:head>

@@ -5,10 +5,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    server: {
-        host: '127.0.0.1',
-        port: 5173,
-    },
+    server: { host: '127.0.0.1', port: 5173 },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],

@@ -67,9 +67,7 @@ class TankConfigController extends Controller
 
     public function update(Request $request, $tank_config)
     {
-        file_put_contents('tank_config_update.log', json_encode($request->all()) . "\n", FILE_APPEND);
         $tankConfig = TankConfig::findOrFail($tank_config);
-        file_put_contents('tank_config_update.log', json_encode($tankConfig) . "\n", FILE_APPEND);
 
         $devices = Auth::user()->devices()->get();
         

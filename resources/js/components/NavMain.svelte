@@ -15,7 +15,7 @@
         {#each items as item (item.title)}
             <SidebarMenuItem>
                 <Link href={item.href} class="block w-full">
-                    <SidebarMenuButton isActive={item.href === $page.url}>
+                    <SidebarMenuButton isActive={new URL(item.href, window.location.origin).pathname === new URL($page.url, window.location.origin).pathname}>
                         {#if item.icon}
                             {@const Icon = item.icon}
                             <Icon class="h-4 w-4 shrink-0" />

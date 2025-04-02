@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\TankStateController;
 use App\Http\Controllers\TankConfigController;
+
+use App\Http\Controllers\LogController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -25,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tankconfigs', [TankConfigController::class, 'index'])->name('tankconfigs.index');
     Route::get('/tankconfigs/{tank_config}/edit', [TankConfigController::class, 'edit'])->name('tankconfigs.edit');
     Route::put('/tankconfigs/{tank_config}', [TankConfigController::class, 'update'])->name('tankconfigs.update');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 });
 
 
