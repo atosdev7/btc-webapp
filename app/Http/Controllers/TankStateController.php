@@ -42,6 +42,7 @@ class TankStateController extends Controller
             }
 
             $tankStates = $device->tankStates()->get();
+            $tankConfigs = $device->tankConfigs()->get();
             if ($tankStates->isEmpty()) {
                 return Inertia::render('Dashboard', [
                     'devices' => $devices,
@@ -50,8 +51,7 @@ class TankStateController extends Controller
                     'error' => 'No tank states found for this device.',
                 ]);
             } else{
-                file_put_contents('tank_states.json', json_encode($tankStates));
-                return Inertia::render('Dashboard', ['devices' => $devices, "tankStates"=> $tankStates, "selectedDeviceId" => $device_id]);
+                return Inertia::render('Dashboard', ['devices' => $devices, "tankStates"=> $tankStates, "tankConfigs"=> $tankConfigs, "selectedDeviceId" => $device_id]);
             }
         } else {
             return Inertia::render('Dashboard', [

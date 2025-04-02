@@ -9,24 +9,18 @@
 
     interface Props {
         breadcrumbs?: BreadcrumbItemType[];
-        showDeviceCombobox?: boolean;
-        devices?: { id: number; name: string; board_id: string }[];
-        selectedDeviceId?: number | null;
+        deviceSelecter?: Snippet;
         children?: Snippet;
     }
 
-    let { breadcrumbs = [], children, showDeviceCombobox, devices, selectedDeviceId}: Props = $props();
+    let { breadcrumbs = [], children, deviceSelecter }: Props = $props();
 </script>
 
 <AppShell variant="sidebar">
     <AppSidebar />
     <AppContent variant="sidebar">
-        {#if showDeviceCombobox==true}
-            <AppSidebarHeaderWithDeviceList
-                {breadcrumbs}
-                devices={devices}
-                selectedDeviceId={selectedDeviceId}
-            />
+        {#if deviceSelecter}
+            <AppSidebarHeaderWithDeviceList {breadcrumbs} {deviceSelecter} />
         {:else}
             <AppSidebarHeader {breadcrumbs} />
         {/if}

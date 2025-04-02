@@ -23,5 +23,10 @@ class Device extends Model
     public function tankStates()
     {
         return $this->hasMany(TankState::class);
-    }    
+    }
+
+    public function tankConfigs()
+    {
+        return $this->hasMany(TankConfig::class);
+    }
 }

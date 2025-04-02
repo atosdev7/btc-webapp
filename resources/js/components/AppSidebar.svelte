@@ -21,7 +21,7 @@
         },
         {
             title: 'Settings',
-            href: '/settings',
+            href: '/tankconfigs',
             icon: Settings,
         },        
     ];
