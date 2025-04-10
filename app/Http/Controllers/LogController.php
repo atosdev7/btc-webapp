@@ -63,6 +63,7 @@ class LogController extends Controller
             ->where('device_id', $device_id)
             ->where('tank_id', $tank_id)
             ->whereDate('time', $parsedDate)
+            ->orderBy('time', 'asc')
             ->get();
         
         return Inertia::render('Logs', ['devices' => $devices, "logs"=> $logs, "selectedDeviceId" => $device_id, "selectedTankId" => $tank_id, "selectedDate" => $date]);
