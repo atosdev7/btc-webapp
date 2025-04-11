@@ -14,52 +14,52 @@ class TankStateController extends Controller
     public function index(Request $request)
     {
         $device_id = $request->query('device_id');
+        
+        if ($device_id == null) {
+            $selectedDeviceId = $request->session()->get('selected_device_id', null);
+            if ($selectedDeviceId) {
+                return redirect()->route('dashboard', ['device_id' => $selectedDeviceId]);
+            } else {
+                try {
+                    $device_id = Auth::user()->devices()->first()->id; // Default to the first device if no ID is provided
+                    return redirect()->route('dashboard', ['device_id' => $device_id]);
+                } catch (\Exception $e) {
+                    return Inertia::render('Dashboard', [
+                        'devices' => [],
+                        'tankStates' => [],
+                        'selectedDeviceId' => null,
+                        'error' => 'No devices found.',
+                    ]);
+                }
+            }
+        }
 
         $devices = Auth::user()->devices()->get();
-        if ($devices->isEmpty()) {
+        $device = Auth::user()->devices()->find($device_id);
+
+        if (!$device) {
             return Inertia::render('Dashboard', [
-                'devices' => [],
+                'devices' => $devices,
                 'tankStates' => [],
                 'selectedDeviceId' => null,
                 'error' => 'No devices found.',
             ]);
         }
 
-        if ($device_id == null) {
-            $device_id = $devices->first()->id; // Default to the first device if no ID is provided
-            return redirect()->route('dashboard', ['device_id' => $device_id]);
-        }
+        $request->session()->put('selected_device_id', $device_id);
 
-        if ($device_id) {
-            $device = $devices->find($device_id);
-            if (!$device) {
-                return Inertia::render('Dashboard', [
-                    'devices' => $devices,
-                    'tankStates' => [],
-                    'selectedDeviceId' => null,
-                    'error' => 'Device is not selected',
-                ]);
-            }
+        $tankStates = $device->tankStates()->get();
+        $tankConfigs = $device->tankConfigs()->get();
 
-            $tankStates = $device->tankStates()->get();
-            $tankConfigs = $device->tankConfigs()->get();
-            if ($tankStates->isEmpty()) {
-                return Inertia::render('Dashboard', [
-                    'devices' => $devices,
-                    'tankStates' => [],
-                    'selectedDeviceId' => $device_id,
-                    'error' => 'No tank states found for this device.',
-                ]);
-            } else{
-                return Inertia::render('Dashboard', ['devices' => $devices, "tankStates"=> $tankStates, "tankConfigs"=> $tankConfigs, "selectedDeviceId" => $device_id]);
-            }
-        } else {
+        if ($tankStates->isEmpty()) {
             return Inertia::render('Dashboard', [
                 'devices' => $devices,
                 'tankStates' => [],
-                'selectedDeviceId' => null,
-                'error' => 'Device is not selected',
+                'selectedDeviceId' => $device_id,
+                'error' => 'No tank states found for this device.',
             ]);
         }
+
+        return Inertia::render('Dashboard', ['devices' => $devices, "tankStates"=> $tankStates, "tankConfigs"=> $tankConfigs, "selectedDeviceId" => $device_id]);
     }
 }

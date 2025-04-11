@@ -13,9 +13,31 @@ class TankConfigController extends Controller
     public function index(Request $request)
     {
         $device_id = $request->query('device_id');
+        
+        if ($device_id == null) {
+            $selectedDeviceId = $request->session()->get('selected_device_id', null);
+            if ($selectedDeviceId) {
+                $device_id = $selectedDeviceId;
+                return redirect()->route('tankconfigs.index', ['device_id' => $device_id]);
+            } else {
+                try {
+                    $device_id = Auth::user()->devices()->first()->id; // Default to the first device if no ID is provided
+                    return redirect()->route('tankconfigs.index', ['device_id' => $device_id]);
+                } catch (\Exception $e) {
+                    return Inertia::render('TankConfigs', [
+                        'devices' => [],
+                        'selectedDeviceId' => null,
+                        'tankConfigs' => [],
+                        'error' => 'No devices found.',
+                    ]);
+                }
+            }
+        }
 
         $devices = Auth::user()->devices()->get();
-        if ($devices->isEmpty()) {
+        $device = Auth::user()->devices()->find($device_id);
+
+        if (!$device) {
             return Inertia::render('TankConfigs', [
                 'devices' => [],
                 'selectedDeviceId' => null,
@@ -24,45 +46,23 @@ class TankConfigController extends Controller
             ]);
         }
 
-        if ($device_id == null) {
-            $device_id = $devices->first()->id; // Default to the first device if no ID is provided
-            return redirect()->route('tankconfigs.index', ['device_id' => $device_id]);
-        }
+        $request->session()->put('selected_device_id', $device_id);
 
-        if ($device_id) {
-            $device = $devices->find($device_id);
-            if (!$device) {
-                return Inertia::render('TankConfigs', [
-                    'devices' => $devices,
-                    'selectedDeviceId' => null,
-                    'tankConfigs' => [],
-                    'error' => 'Device is not selected',
-                ]);
-            }
-
-            $tankConfigs = $device->tankConfigs()->get();
-            if ($tankConfigs->isEmpty()) {
-                return Inertia::render('TankConfigs', [
-                    'devices' => $devices,
-                    'selectedDeviceId' => $device_id,
-                    'tankConfigs' => [],
-                    'error' => 'No tank config found for this device.',
-                ]);
-            } else {
-                return Inertia::render('TankConfigs', [
-                    'devices' => $devices,
-                    'selectedDeviceId' => $device_id,
-                    'tankConfigs' => $tankConfigs,
-                ]);
-            }
-        } else {
+        $tankConfigs = $device->tankConfigs()->get();
+        if ($tankConfigs->isEmpty()) {
             return Inertia::render('TankConfigs', [
                 'devices' => $devices,
-                'selectedDeviceId' => null,
+                'selectedDeviceId' => $device_id,
                 'tankConfigs' => [],
-                'error' => 'Device is not selected',
+                'error' => 'No tank config found for this device.',
             ]);
         }
+
+        return Inertia::render('TankConfigs', [
+            'devices' => $devices,
+            'selectedDeviceId' => $device_id,
+            'tankConfigs' => $tankConfigs,
+        ]);
     }
 
     public function update(Request $request, $tank_config)

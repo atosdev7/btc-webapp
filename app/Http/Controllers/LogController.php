@@ -18,43 +18,62 @@ class LogController extends Controller
         $tank_id = $request->query('tank_id');
         $date = $request->query('date');
 
+        if ($device_id == null) {
+            $selectedDeviceId = $request->session()->get('selected_device_id', null);
+            if ($selectedDeviceId) {
+                return redirect()->route('logs.index', ['device_id' => $selectedDeviceId, 'tank_id' => $tank_id, 'date' => $date]);
+            } else {
+                try {
+                    $device_id = Auth::user()->devices()->first()->id; // Default to the first device if no ID is provided
+                    return redirect()->route('logs.index', ['device_id' => $device_id, 'tank_id' => $tank_id, 'date' => $date]);
+                } catch (\Exception $e) {
+                    return Inertia::render('Logs', [
+                        'devices' => [],
+                        'selectedDeviceId' => $device_id,
+                        'selectedTankId' => $tank_id,
+                        'selectedDate' => $date,
+                        'logs'=> [],
+                        'error' => 'No devices found.',
+                    ]);
+                }
+            }
+        }
+
         $devices = Auth::user()->devices()->get();
-        if ($devices->isEmpty()) {
+        $device = Auth::user()->devices()->find($device_id);
+
+        if (!$device) {
             return Inertia::render('Logs', [
-                'devices' => [],
+                'devices' => $devices,
                 'selectedDeviceId' => $device_id,
-                'selectedTankId' => $tank_id,
-                'selectedDate' => $date,
+                'selectedTankId' => null,
+                'selectedDate' => null,
                 'logs'=> [],
-                'error' => 'No devices found.',
+                'error' => 'Device is not selected',
             ]);
         }
 
-        if ($device_id == null || $tank_id == null || $date == null) {
-            if ($device_id == null) {
-                $device_id = $devices->first()->id; // Default to the first device if no ID is provided
-            }
+        $request->session()->put('selected_device_id', $device_id);
+        
+        if ($tank_id == null || $date == null) {
             if ($tank_id == null) {
-                $tank_id = 1; // Default to the first tank if no ID is provided
+                $tank_id = $request->session()->get('selected_tank_id', 1);
             }
+    
             if ($date == null) {
-                $date = Carbon::now()->format('Y-m-d'); // Default to today's date if no date is provided
+                $date = $request->session()->get('selected_date', null);
+                if ($date) {
+                    $date = Carbon::parse($date)->format('Y-m-d'); // Format the date to 'Y-m-d'
+                } else {
+                    $date = Carbon::now()->format('Y-m-d'); // Default to today's date if no date is provided
+                }
             }
     
             return redirect()->route('logs.index', ['device_id' => $device_id, 'tank_id' => $tank_id, 'date' => $date]);
         }
 
-        $device = $devices->find($device_id);
-        if (!$device) {
-            return Inertia::render('Logs', [
-                'devices' => $devices,
-                'selectedDeviceId' => $device_id,
-                'selectedTankId' => $tank_id,
-                'selectedDate' => $date,
-                'logs'=> [],
-                'error' => 'Device is not selected',
-            ]);
-        }
+        $request->session()->put('selected_tank_id', $tank_id);
+        $request->session()->put('selected_date', $date);
 
         // Parse the date, ensuring it's well-formed
         $parsedDate = Carbon::parse($date);
